@@ -45,7 +45,6 @@ def buildUNetMask(cocoItem):
     return image, np.expand_dims(np.maximum.reduce(annMasks), axis=2)
 
 def resizeToUNet(image, mask):
-    print(mask.shape, np.expand_dims(cv.resize(mask, (388, 388)), axis=2).shape)
     return (
         cv.resize(image, (572, 572)),
         np.expand_dims(cv.resize(mask, (388, 388)), axis=2)
@@ -83,6 +82,7 @@ train_dataset = tf.data.Dataset.from_generator(
           tf.TensorSpec(shape=(388, 388, 1), dtype=tf.int32)
     )
 )
+
 train_dataset = train_dataset.map(load_image_train, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 train_dataset = train_dataset.shuffle(BUFFER_SIZE).batch(BATCH_SIZE).cache()
 train_dataset = train_dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
@@ -100,11 +100,6 @@ test_dataset = tf.data.Dataset.from_generator(
 test_dataset = test_dataset.map(load_image_test)
 test_dataset = test_dataset.batch(BATCH_SIZE)
 
-
-# Check out how does the training set look like.
-for image, mask in train_dataset.take(1):
-  sample_image, sample_mask = image, mask
-  display([sample_image, sample_mask])
 
 # Create the model.
 model = unetModel()
