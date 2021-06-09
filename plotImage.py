@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 
 import os, sys
-ci_build_and_not_headless = False
+ci_and_not_headless = False
 try:
     from cv2.version import ci_build, headless
     ci_and_not_headless = ci_build and not headless
