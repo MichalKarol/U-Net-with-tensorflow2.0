@@ -73,7 +73,7 @@ def load_image_test(image, mask):
     return image, mask
 
 
-train_dataset_generator = CocoDataset(root="../data_RGB/train", annFile="../data_RGB/train/train.json")
+train_dataset_generator = CocoDataset(root="./data_RGB/train", annFile="./data_RGB/train/train.json")
 train_dataset_generator = (buildUNetMask(item) for item in train_dataset_generator)
 train_dataset_generator = (resizeToUNet(image, mask) for image, mask in train_dataset_generator)
 train_dataset = tf.data.Dataset.from_generator(
@@ -87,7 +87,7 @@ train_dataset = train_dataset.map(load_image_train, num_parallel_calls=tf.data.e
 train_dataset = train_dataset.shuffle(BUFFER_SIZE).batch(BATCH_SIZE).cache()
 train_dataset = train_dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
-test_dataset_generator = CocoDataset(root="../data_RGB/test", annFile="../data_RGB/test/test.json")
+test_dataset_generator = CocoDataset(root="./data_RGB/test", annFile="./data_RGB/test/test.json")
 test_dataset_generator = (buildUNetMask(item) for item in test_dataset_generator)
 test_dataset_generator = (resizeToUNet(image, mask) for image, mask in test_dataset_generator)
 test_dataset = tf.data.Dataset.from_generator(
@@ -115,7 +115,7 @@ model.summary()
 
 # Write model saving callback.
 model_save_callback = tf.keras.callbacks.ModelCheckpoint(
-    '/content/gdrive/My\ Drive/iranian_models/unet/model_checkpoint', monitor='val_loss', verbose=0, save_best_only=True,
+    '/content/gdrive/My Drive/iranian_models/unet/model_checkpoint', monitor='val_loss', verbose=0, save_best_only=True,
     save_weights_only=False, mode='auto', save_freq='epoch')
 
 model.compile(optimizer='adam',
