@@ -21,7 +21,7 @@ class CocoDataset:
 
     def __init__(self, root: str, annFile: str):
         self._coco = COCO(annFile)
-        self._ids = list(sorted(self.coco.imgs.keys()))
+        self._ids = list(sorted(self._coco.imgs.keys()))
         self._root = root
 
     def __iter__(self):
