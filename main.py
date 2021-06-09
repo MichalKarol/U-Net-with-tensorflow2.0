@@ -9,7 +9,7 @@ import cv2 as cv
 IMAGE_SIZE = 448
 
 # Hyperparameters
-BATCH_SIZE = 8
+BATCH_SIZE = 16
 EPOCHS = 50
 
 def annToRLE(ann, height, width):
