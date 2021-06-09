@@ -84,7 +84,6 @@ train_dataset = tf.data.Dataset.from_generator(
 
 train_dataset = train_dataset.map(load_image_train, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 train_dataset = train_dataset.batch(BATCH_SIZE).cache()
-train_dataset = train_dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
 test_dataset_generator = CocoDataset(root="./data_RGB/test", annFile="./data_RGB/test/test.json")
 test_dataset_generator = (buildUNetMask(item) for item in test_dataset_generator)
