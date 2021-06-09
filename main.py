@@ -108,7 +108,7 @@ model.summary()
 
 # Write model saving callback.
 model_save_callback = tf.keras.callbacks.ModelCheckpoint(
-    '/content/gdrive/My\ Drive/iranian_models/unet/model_checkpoint', monitor='val_loss', verbose=0, save_best_only=True,
+    '/content/gdrive/My Drive/iranian_models/unet/model_checkpoint', monitor='val_loss', verbose=0, save_best_only=True,
     save_weights_only=False, mode='auto', save_freq='epoch')
 
 model.compile(optimizer='adam',
