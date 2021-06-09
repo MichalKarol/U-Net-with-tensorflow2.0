@@ -9,8 +9,8 @@ class CocoDatasetIterator:
         self._index = 0
 
     def __next__(self):
-        if (self._index < len(self._dataset._coco)):
-            imageid = self._dataset._coco[self._index]
+        if (self._index < len(self._dataset._ids)):
+            imageid = self._dataset._ids[self._index]
             image_path = os.path.join(self._dataset._root, self._dataset._coco.loadImgs(imageid)[0]["file_name"])
             image = cv.imread(image_path)
             annotations = self._dataset._coco.loadAnns(self._dataset._coco.getAnnIds(imageid))
