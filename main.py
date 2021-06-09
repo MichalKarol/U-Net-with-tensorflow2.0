@@ -10,8 +10,7 @@ IMAGE_SIZE = 448
 
 # Hyperparameters
 BATCH_SIZE = 8
-BUFFER_SIZE = 1000
-EPOCHS = 20
+EPOCHS = 50
 
 def annToRLE(ann, height, width):
     """
@@ -84,7 +83,7 @@ train_dataset = tf.data.Dataset.from_generator(
 )
 
 train_dataset = train_dataset.map(load_image_train, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-train_dataset = train_dataset.shuffle(BUFFER_SIZE).batch(BATCH_SIZE).cache()
+train_dataset = train_dataset.batch(BATCH_SIZE).cache()
 train_dataset = train_dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
 test_dataset_generator = CocoDataset(root="./data_RGB/test", annFile="./data_RGB/test/test.json")
@@ -110,7 +109,7 @@ model.summary()
 
 # Write model saving callback.
 model_save_callback = tf.keras.callbacks.ModelCheckpoint(
-    '/content/gdrive/My Drive/iranian_models/unet/model_checkpoint', monitor='val_loss', verbose=0, save_best_only=True,
+    '/content/gdrive/My\ Drive/iranian_models/unet/model_checkpoint', monitor='val_loss', verbose=0, save_best_only=True,
     save_weights_only=False, mode='auto', save_freq='epoch')
 
 model.compile(optimizer='adam',
