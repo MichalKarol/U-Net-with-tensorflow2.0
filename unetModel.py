@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 
-def unet_model():
+def unetModel():
     # declaring the input layer
     # Input layer expects an RGB image, in the original paper the network consisted of only one channel.
     inputs = layers.Input(shape=(572, 572, 3))
