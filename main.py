@@ -9,7 +9,7 @@ import cv2 as cv
 IMAGE_SIZE = 448
 
 # Hyperparameters
-BATCH_SIZE = 16
+BATCH_SIZE = 8
 EPOCHS = 50
 
 def annToRLE(ann, height, width):
@@ -76,7 +76,7 @@ train_dataset = [buildUNetMask(item) for item in train_dataset]
 train_dataset = [resizeToUNet(image, mask) for image, mask in train_dataset]
 train_dataset = tf.data.Dataset.from_tensor_slices(([x[0] for x in train_dataset], [x[1] for x in train_dataset]))
 train_dataset = train_dataset.map(load_image_train, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-train_dataset = train_dataset.batch(BATCH_SIZE).cache()
+train_dataset = train_dataset.batch(BATCH_SIZE)
 
 test_dataset = CocoDataset(root="./data_RGB/test", annFile="./data_RGB/test/test.json")
 test_dataset = [buildUNetMask(item) for item in test_dataset]
