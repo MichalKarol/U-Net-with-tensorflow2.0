@@ -45,13 +45,12 @@ def buildUNetMask(cocoItem):
         annMask = annMask * int(annotation["category_id"])
         annMasks.append(annMask)
     masks = np.expand_dims(np.maximum.reduce(annMasks), axis=2)
-    print(masks.shape)
     return image, masks
 
 def resizeToUNet(image, mask):
     return (
         tf.constant(cv.resize(image, (572, 572))),
-        tf.constant(cv.resize(mask, (388, 388)))
+        tf.constant(np.expand_dims(cv.resize(mask, (388, 388)), axis=2))
     )
 
 @tf.function
