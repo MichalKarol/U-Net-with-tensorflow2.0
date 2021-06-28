@@ -103,7 +103,7 @@ def main(model_path: str):
                                     save_best_only=True, mode='min')
 
         model.compile(optimizer='adam',
-                    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                    loss='categorical_crossentropy',
                     metrics=['accuracy'])
         model_history = model.fit(train_dataset, epochs=EPOCHS, validation_data=test_dataset, callbacks=[earlystopper, checkpoint])
 
@@ -115,6 +115,9 @@ def main(model_path: str):
             test_dataset = [resizeToUNet(image, mask) for image, mask in test_dataset]
             test_dataset = tf.data.Dataset.from_tensor_slices(([x[0] for x in test_dataset], [x[1] for x in test_dataset]))
             test_dataset = test_dataset.map(load_image_test)
+            plt.figure()
+            plt.imshow(next(test_dataset.take(1).as_numpy_iterator())[1][:, :, 2], 'gray', interpolation='none')
+            plt.show()
             test_dataset = test_dataset.batch(1)
             xd = model.predict(test_dataset)[0]
             plt.figure()
