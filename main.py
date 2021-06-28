@@ -6,6 +6,8 @@ from pycocotools import mask as maskUtils
 import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+
 
 IMAGE_SIZE = 448
 
@@ -95,15 +97,15 @@ def main(model_path: str):
         model.build(input_shape=(None, 3, 572, 572))
         model.summary()
 
-        # Write model saving callback.
-        model_save_callback = tf.keras.callbacks.ModelCheckpoint(
-            '/content/gdrive/My Drive/iranian_models/unet/model_checkpoint', monitor='val_loss', verbose=0, save_best_only=True,
-            save_weights_only=False, mode='auto', save_freq='epoch')
+        earlystopper = EarlyStopping(patience=5, verbose=1)
+
+        checkpoint = ModelCheckpoint( '/content/gdrive/My Drive/iranian_models/unet/model.h5', monitor='val_loss', verbose=1, 
+                                    save_best_only=True, mode='min')
 
         model.compile(optimizer='adam',
                     loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                     metrics=['accuracy'])
-        model_history = model.fit(train_dataset, epochs=EPOCHS, validation_data=test_dataset, callbacks=[model_save_callback])
+        model_history = model.fit(train_dataset, epochs=EPOCHS, validation_data=test_dataset, callbacks=[earlystopper, checkpoint])
 
     if model_path:
         test_dataset_raw = CocoDataset(root="./data_RGB/test", annFile="./data_RGB/test/test.json")
