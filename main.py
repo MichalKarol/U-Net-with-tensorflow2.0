@@ -75,6 +75,14 @@ def load_image_test(image, mask):
     return image, mask
 
 def main(model_path: str):
+    # Create the model.
+    model = unetModel()
+    # Build the model with the input shape
+    # Image is RGB, so here the input channel is 3.
+    model.build(input_shape=(None, 3, 572, 572))
+    model.summary()
+
+
     if not model_path:
         test_dataset = CocoDataset(root="./data_RGB/test", annFile="./data_RGB/test/test.json")
         test_dataset = [buildUNetMask(item) for item in test_dataset]
@@ -90,12 +98,7 @@ def main(model_path: str):
         train_dataset = train_dataset.map(load_image_train, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         train_dataset = train_dataset.batch(BATCH_SIZE)
 
-        # Create the model.
-        model = unetModel()
-        # Build the model with the input shape
-        # Image is RGB, so here the input channel is 3.
-        model.build(input_shape=(None, 3, 572, 572))
-        model.summary()
+        
 
         earlystopper = EarlyStopping(patience=5, verbose=1)
 
@@ -109,7 +112,7 @@ def main(model_path: str):
 
     if model_path:
         test_dataset_raw = CocoDataset(root="./data_RGB/test", annFile="./data_RGB/test/test.json")
-        model = tf.keras.models.load_model(model_path)
+        model.load_weights(model_path)
         for item in list(test_dataset_raw)[0:3]:
             test_dataset = [buildUNetMask(item)]
             test_dataset = [resizeToUNet(image, mask) for image, mask in test_dataset]
@@ -120,8 +123,13 @@ def main(model_path: str):
             plt.show()
             test_dataset = test_dataset.batch(1)
             xd = model.predict(test_dataset)[0]
+            # print(np.argmax(xd, axis=2))
+            # print(np.argmax(xd, axis=2).shape)
             plt.figure()
             plt.imshow(item[0], 'gray', interpolation='none')
+            plt.show()
+            plt.figure()
+            plt.imshow(np.argmax(xd, axis=2), 'gray', interpolation='none')
             plt.show()
             plt.figure()
             plt.imshow(xd[:, :, 0], 'gray', interpolation='none')
