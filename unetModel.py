@@ -1,72 +1,59 @@
-from keras.models import Model
-from keras.layers import Input, BatchNormalization, Activation, Dense, Dropout
-from keras.layers.convolutional import Conv2D, Conv2DTranspose
-from keras.layers.pooling import MaxPooling2D
-from keras.layers.merge import concatenate
+import tensorflow as tf
+from tensorflow.keras import layers
 
-def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
-    """Function to add 2 convolutional layers with the parameters passed to it"""
-    # first layer
-    x = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size),\
-              kernel_initializer = 'he_normal', padding = 'same')(input_tensor)
-    if batchnorm:
-        x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    
-    # second layer
-    x = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size),\
-              kernel_initializer = 'he_normal', padding = 'same')(input_tensor)
-    if batchnorm:
-        x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    
-    return x
-  
-def unetModel(n_filters = 16, dropout = 0.1, batchnorm = True):
+
+def unetModel():
     # declaring the input layer
     # Input layer expects an RGB image, in the original paper the network consisted of only one channel.
-    inputs = Input(shape=(572, 572, 3))
+    inputs = layers.Input(shape=(572, 572, 3))
+    # first part of the U - contracting part
+    c0 = layers.Conv2D(64, activation='relu', padding="same", kernel_size=3)(inputs)
+    c1 = layers.Conv2D(64, activation='relu', padding="same", kernel_size=3)(c0)  # This layer for concatenating in the expansive part
+    c2 = layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(c1)
 
-    # Contracting Path
-    c1 = conv2d_block(inputs, n_filters * 1, kernel_size = 3, batchnorm = batchnorm)
-    p1 = MaxPooling2D((2, 2))(c1)
-    p1 = Dropout(dropout)(p1)
-    
-    c2 = conv2d_block(p1, n_filters * 2, kernel_size = 3, batchnorm = batchnorm)
-    p2 = MaxPooling2D((2, 2))(c2)
-    p2 = Dropout(dropout)(p2)
-    
-    c3 = conv2d_block(p2, n_filters * 4, kernel_size = 3, batchnorm = batchnorm)
-    p3 = MaxPooling2D((2, 2))(c3)
-    p3 = Dropout(dropout)(p3)
-    
-    c4 = conv2d_block(p3, n_filters * 8, kernel_size = 3, batchnorm = batchnorm)
-    p4 = MaxPooling2D((2, 2))(c4)
-    p4 = Dropout(dropout)(p4)
-    
-    c5 = conv2d_block(p4, n_filters = n_filters * 16, kernel_size = 3, batchnorm = batchnorm)
-    
-    # Expansive Path
-    u6 = Conv2DTranspose(n_filters * 8, (3, 3), strides = (2, 2), padding = 'same')(c5)
-    u6 = concatenate([u6, c4])
-    u6 = Dropout(dropout)(u6)
-    c6 = conv2d_block(u6, n_filters * 8, kernel_size = 3, batchnorm = batchnorm)
-    
-    u7 = Conv2DTranspose(n_filters * 4, (3, 3), strides = (2, 2), padding = 'same')(c6)
-    u7 = concatenate([u7, c3])
-    u7 = Dropout(dropout)(u7)
-    c7 = conv2d_block(u7, n_filters * 4, kernel_size = 3, batchnorm = batchnorm)
-    
-    u8 = Conv2DTranspose(n_filters * 2, (3, 3), strides = (2, 2), padding = 'same')(c7)
-    u8 = concatenate([u8, c2])
-    u8 = Dropout(dropout)(u8)
-    c8 = conv2d_block(u8, n_filters * 2, kernel_size = 3, batchnorm = batchnorm)
-    
-    u9 = Conv2DTranspose(n_filters * 1, (3, 3), strides = (2, 2), padding = 'same')(c8)
-    u9 = concatenate([u9, c1])
-    u9 = Dropout(dropout)(u9)
-    c9 = conv2d_block(u9, n_filters * 1, kernel_size = 3, batchnorm = batchnorm)
-    
-    outputs = Conv2D(4, (1, 1))(c9)
-    model = Model(inputs=inputs, outputs=[outputs])
+    c3 = layers.Conv2D(128, activation='relu', padding="same", kernel_size=3)(c2)
+    c4 = layers.Conv2D(128, activation='relu', padding="same", kernel_size=3)(c3)  # This layer for concatenating in the expansive part
+    c5 = layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(c4)
+
+    c6 = layers.Conv2D(256, activation='relu', padding="same", kernel_size=3)(c5)
+    c7 = layers.Conv2D(256, activation='relu', padding="same", kernel_size=3)(c6)  # This layer for concatenating in the expansive part
+    c8 = layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(c7)
+
+    c9 = layers.Conv2D(512, activation='relu', padding="same", kernel_size=3)(c8)
+    c10 = layers.Conv2D(512, activation='relu', padding="same", kernel_size=3)(c9)  # This layer for concatenating in the expansive part
+    c11 = layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='valid')(c10)
+
+    c12 = layers.Conv2D(1024, activation='relu', padding="same", kernel_size=3)(c11)
+    c13 = layers.Conv2D(1024, activation='relu', padding="same", kernel_size=3, padding='valid')(c12)
+
+    # We will now start the second part of the U - expansive part
+    t01 = layers.Conv2DTranspose(512, kernel_size=2, strides=(2, 2), activation='relu')(c13)
+    concat01 = layers.concatenate([t01, c10], axis=-1)
+
+    c14 = layers.Conv2D(512, activation='relu', kernel_size=3)(concat01)
+    c15 = layers.Conv2D(512, activation='relu', kernel_size=3)(c14)
+
+    t02 = layers.Conv2DTranspose(256, kernel_size=2, strides=(2, 2), activation='relu')(c15)
+    concat02 = layers.concatenate([t02, c7], axis=-1)
+
+    c16 = layers.Conv2D(256, activation='relu', kernel_size=3)(concat02)
+    c17 = layers.Conv2D(256, activation='relu', kernel_size=3)(c16)
+
+    t03 = layers.Conv2DTranspose(128, kernel_size=2, strides=(2, 2), activation='relu')(c17)
+    concat03 = layers.concatenate([t03, c4], axis=-1)
+
+    c18 = layers.Conv2D(128, activation='relu', kernel_size=3)(concat03)
+    c19 = layers.Conv2D(128, activation='relu', kernel_size=3)(c18)
+
+    t04 = layers.Conv2DTranspose(64, kernel_size=2, strides=(2, 2), activation='relu')(c19)
+    concat04 = layers.concatenate([t04, c1], axis=-1)
+
+    c20 = layers.Conv2D(64, activation='relu', kernel_size=3)(concat04)
+    c21 = layers.Conv2D(64, activation='relu', kernel_size=3)(c20)
+
+    # This is based on our dataset. The output channels are 3, think of it as each pixel will be classified
+    # into three classes, but I have written 4 here, as I do padding with 0, so we end up have four classes.
+    outputs = layers.Conv2D(4, kernel_size=1)(c21)
+
+    model = tf.keras.Model(inputs=inputs, outputs=outputs, name="u-netmodel")
     return model

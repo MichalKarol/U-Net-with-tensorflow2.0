@@ -50,7 +50,7 @@ def buildUNetMask(cocoItem):
 def resizeToUNet(image, mask):
     return (
         tf.constant(cv.resize(image, (572, 572))),
-        tf.constant(np.expand_dims(cv.resize(mask, (388, 388)), axis=2))
+        tf.constant(np.expand_dims(cv.resize(mask, (572, 572)), axis=2))
     )
 
 @tf.function
